@@ -11,9 +11,8 @@ r = 1
 while r:
     def f(y):
         return 1 - exp(-2 * y)
-        # return 2 * y ** 3 - 5 * y ** 2 + 3 * y - 1
-        
-        
+
+
     print("Введите n:")
     n = int(input())
 
@@ -33,46 +32,47 @@ while r:
     print(values)
 
 
-    def RR(a, b):
-        if a > b:
+    def div_diff(a_, b_):
+        if a_ > b_:
             exit(0)
-        if a == b:
-            return values[a][2]
+        if a_ == b_:
+            return values[a_][2]
         else:
-            return (RR(a + 1, b) - RR(a, b - 1)) / (values[b][1] - values[a][1])
+            return (div_diff(a_ + 1, b_) - div_diff(a_, b_ - 1)) / (values[b_][1] - values[a_][1])
 
 
-    def Newton(z):
+    def newton(z):
         ans = 0
-        nakop = 1
+        t = 1
         for k in range(n + 1):
-            ans += RR(0, k) * nakop
-            nakop *= (z - values[k][1])
+            ans = ans + div_diff(0, k) * t
+            t = t * (z - values[k][1])
         return ans
 
 
-    def zek(k, z):
-        nakop = 1
+    def mult(k, z):
+        t = 1
         for p in range(n + 1):
             if p != k:
-                nakop *= (z - values[p][1])
-                # print("nakop", nakop)
-        return nakop
+                t = t * (z - values[p][1])
+                # print("t", t)
+        return t
 
 
-    def Lagrange(q):
+    def lagrange(q):
         ans = 0
         for t in range(n + 1):
-            ans += values[t][2] * zek(t, x) / zek(t, values[t][1])
+            ans = ans + (values[t][2] * mult(t, q) / mult(t, values[t][1]))
+            print('ans', ans)
         return ans
 
 
-    print("N(x)", Newton(x))
+    print("N(x)", newton(x))
     print(f(x))
-    print("погрешность метода Ньютона в точке x:", abs(f(x) - Newton(x)))
+    print("погрешность метода Ньютона в точке x:", abs(f(x) - newton(x)))
 
-    print("L(x)", Lagrange(x))
+    print("L(x)", lagrange(x))
     print(f(x))
-    print("погрешность метода Лагранжа в точке x:", abs(f(x) - Lagrange(x)))
+    print("погрешность метода Лагранжа в точке x:", abs(f(x) - lagrange(x)))
     print("Введите 0 для выхода, 1 для продолжения: ")
     r = int(input())

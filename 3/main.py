@@ -1,4 +1,6 @@
-print("Задача обратного интерполирования\nвариант 5\nf(x) = 3x^3 + 2x^2 - 4\n")
+from math import exp
+
+print("Задача обратного интерполирования (1 способ)\nВариант 5\nf(x) = 1 - exp(-2x)\n")
 print("Начало отрезка, a:")
 a = float(input())
 print("Конец отрезка, b:")
@@ -8,79 +10,83 @@ m = int(input()) - 1
 r = 1
 
 
+# Исходная функция
 def f(y):
-    return 3 * y ** 3 + 2 * y ** 2 - 4
+    return 1 - exp(-2 * y)
 
 
-print("Введите искомое значение функции, F:")
-F = float(input())
+while r:
+    print("Введите искомое значение функции, F:")
+    F = float(input())
 
-print("Степень интерполяционного многочлена (n<=m),  n:")
-n = int(input())
-
-while n > m:
-    print("Введите новое n, старое плохое")
+    print("Введите степень интерполяционного многочлена (n<=m),  n:")
     n = int(input())
 
-values = []
-for i in range(m + 1):
-    xi = (a + i * (b - a) / m)
-    values.append((abs(F - f(xi)), f(xi), xi))
+    while n > m:
+        print("Введите другое n, (n<=m),  n:")
+        n = int(input())
+
+    # Заполняем массив узлами и значениями функции в них
+    values = []
+    for i in range(m + 1):
+        xi = (a + i * (b - a) / m)
+        values.append((abs(F - f(xi)), f(xi), xi))
+
+    values.sort()
 
 
-# values.sort()
+    # Разделелённые разности
+    def div_diff(a, b):
+        if a > b:
+            exit(0)
+        if a == b:
+            return values[a][2]
+        else:
+            return (div_diff(a + 1, b) - div_diff(a, b - 1)) / (values[b][1] - values[a][1])
 
 
-def RR(a, b):
-    if a > b:
-        exit(0)
-    if a == b:
-        return values[a][2]
-    else:
-        return (RR(a + 1, b) - RR(a, b - 1)) / (values[b][1] - values[a][1])
+    # Метод Ньютона
+    def newton(z):
+        ans = 0
+        t = 1
+        for k in range(n + 1):
+            ans += div_diff(0, k) * t
+            t *= (z - values[k][1])
+        return ans
 
 
-def Newton(z):
-    ans = 0
-    nakop = 1
-    for k in range(n + 1):
-        ans += RR(0, k) * nakop
-        nakop *= (z - values[k][1])
-    return ans
+    # Накопленные произведения для Лагранжа
+    def mult(k, z):
+        t = 1
+        for p in range(n + 1):
+            if p != k:
+                t *= (z - values[p][1])
+        return t
 
 
-def zek(k, z):
-    nakop = 1
-    for p in range(n + 1):
-        if p != k:
-            nakop *= (z - values[p][1])
-            # print("nakop", nakop)
-    return nakop
+    # Метод Лагранжа
+    def lagrange(q):
+        ans = 0
+
+        for t in range(n + 1):
+            ans += values[t][2] * mult(t, q) / mult(t, values[t][1])
+        return ans
 
 
-def Lagrange(q):
-    ans = 0
-    for t in range(n + 1):
-        ans += values[t][2] * zek(t, F) / zek(t, values[t][1])
-    return ans
+    # Вывод таблицы значений
+    print('i)  f(x_i)  |  x_i')
+    for i in range(len(values)):
+        print(str(i + 1) + ')', values[i][1], '|', values[i][2])
 
+    X = newton(F)
+    print('\nМетод Ньютона, Q_n(F) = X =', X)
+    print('Значение функции в этой точке, f(X)=', f(X))
+    print('Модуль невязки, r_n(X) =', abs(f(X) - F))
 
-print('i  |  y_i  |  f^(-1)(y_i)')
-for i in range(len(values)):
-    print(str(i + 1) + ')', values[i][0], '|', values[i][1], '|', values[i][2])
+    X = lagrange(F)
+    print('\nМетод Лагранжа, Q_n(F) = X =', X)
+    print('Значение функции в этой точке, f(X)=', f(X))
+    print('Модуль невязки, r_n(X) =', abs(f(X) - F))
 
-X = Newton(F)
-print('\n(Метод Ньютона): X =', X)
-print('f(X)=', f(X))
-r = f(X) - F
-print('r_n(X) =', abs(r))
-
-X = Lagrange(F)
-
-print('\n(Метод Лагранжа): X =', X)
-print('f(X)=', f(X))
-r = f(X) - F
-# print(r)
-print('r_n(X) =', abs(r))
-
-# 1 7 10 900 9
+    print("Введите 0 для выхода, 1 для продолжения: ")
+    r = int(input())
